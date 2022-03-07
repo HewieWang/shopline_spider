@@ -1,6 +1,9 @@
 # shopline_spider
 ## How to use
 ```PHP
+php hello.php
+```
+```PHP
 php test.php -u https://shoplinexxx.com
 ```
 ### Then You'll get some xlsx files , use  https://products.aspose.app/cells/zh/merger/xlsx  to merge it into one file ,Remember Header!
