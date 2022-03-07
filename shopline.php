@@ -3,6 +3,9 @@ require __DIR__ . '/vendor/autoload.php';
 
 use GuzzleHttp\Client;
 use Symfony\Component\DomCrawler\Crawler;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
 $url="https://priskur.xyz/products/cleaner-tools?sku=18053000207889292718923322";
 
 
@@ -111,7 +114,23 @@ function Spider($url)
     return $data;
 
 }
-$fp = fopen('2222.csv', 'w');
+
+$spreadsheet = new Spreadsheet();
+$worksheet = $spreadsheet->getActiveSheet();
+$worksheet->setCellValueByColumnAndRow(1, 1, 'Title*');
+$worksheet->setCellValueByColumnAndRow(2, 1, 'Subtitle');
+$worksheet->setCellValueByColumnAndRow(3, 1, 'Product description html');
+$worksheet->setCellValueByColumnAndRow(4, 1, 'Master image');
+$worksheet->setCellValueByColumnAndRow(5, 1, 'SEO title');
+$worksheet->setCellValueByColumnAndRow(6, 1, 'SEO description');
+// $worksheet->setCellValueByColumnAndRow(1, 7, 'SEO description');
+// $worksheet->setCellValueByColumnAndRow(1, 8, 'SEO description');
+// $worksheet->setCellValueByColumnAndRow(1, 9, 'SEO description');
+// $worksheet->setCellValueByColumnAndRow(1, 10, 'SEO description');
+// $worksheet->setCellValueByColumnAndRow(1, 11, 'SEO description');
+// $worksheet->setCellValueByColumnAndRow(1, 12, 'SEO description');
+
+
 $res=array();
 $w=1;
 if($sku_num>=1){
@@ -129,7 +148,7 @@ if($sku_num>=1){
           echo $arr['sku']['skuList'][$m]['weightUnit'].PHP_EOL;
           echo $arr['sku']['skuList'][$m]['stock'].PHP_EOL;
 
-          fputcsv($fp,array($title,$Subtitle,$seo_title,$seo_desc));
+          // fputcsv($fp,array($title,$Subtitle,$seo_title,$seo_desc));
           // $res["option_name"][$w]
           // var_dump();
           // $x=array_search($key, array_column($arr['sku']['skuList'], 'valueId'));
@@ -139,6 +158,7 @@ if($sku_num>=1){
 }
 
 
-fclose($fp);
+$writer = new Xlsx($spreadsheet);
+$writer->save('hello.xlsx');
 
  ?>
