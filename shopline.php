@@ -8,46 +8,10 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 $url="https://priskur.xyz/products/cleaner-tools?sku=18053000207889292718923322";
 
-
-$data=system("caiji -u ".$url);
-
+$data=exec("caiji -u ".$url);
 // file_put_contents("aa.json",$data);
 
 $arr=json_decode($data,true);
-
-$title=$arr['spu']['title'];
-
-$Subtitle=$arr['spu']['subTitle'];
-
-$images=$arr['spu']['images'];
-
-$seo_title=$arr['productSeo']['title'];
-$seo_desc=$arr['productSeo']['desc'];
-
-//sku
-$sku_num=count($arr['sku']['skuAttributeMap']);
-
-echo "共有".$sku_num."条option".PHP_EOL;
-echo "分别为:".PHP_EOL;
-
-function getsku($brr,$id){
-  foreach ($brr as $m => $n) {
-     foreach ($n as $key => $value) {
-       if (is_array($value)) {
-          foreach ($value as $q => $p) {
-             // echo "valueID是".PHP_EOL;
-            //  var_dump($p['valueId']);
-             if($p['valueId']==$id){
-                return $m;
-             }
-          }
-       }
-
-       // $x=array_search($key, array_column($value, 'valueId'));
-       // return($x);
-     }
-  }
-}
 
 function compress_html($string){
 $string=str_replace("\r\n",'',$string);//清除换行符
@@ -98,6 +62,7 @@ function get_html($url){
     curl_close($ch);
     return $response;
 }
+
 function Spider($url)
 {
     $response = get_html($url);
@@ -106,15 +71,12 @@ function Spider($url)
     $crawler = new Crawler();
     $crawler->addHtmlContent($response);
     try {
-        $data['Product description html'] = compress_html($crawler->filterXPath('//*[@id="shopline-section-product/detail/product-preview"]/div[2]/div[2]/div/div/div[2]/div/div/div')->html());
+        return compress_html($crawler->filterXPath('//*[@id="shopline-section-product/detail/product-preview"]/div[2]/div[2]/div/div/div[2]/div/div/div')->html());
     } catch (\Exception $e) {
         var_dump($e);exit;
     }
 
-    return $data;
-
 }
-
 $spreadsheet = new Spreadsheet();
 $worksheet = $spreadsheet->getActiveSheet();
 $worksheet->setCellValueByColumnAndRow(1, 1, 'Title*');
@@ -123,42 +85,55 @@ $worksheet->setCellValueByColumnAndRow(3, 1, 'Product description html');
 $worksheet->setCellValueByColumnAndRow(4, 1, 'Master image');
 $worksheet->setCellValueByColumnAndRow(5, 1, 'SEO title');
 $worksheet->setCellValueByColumnAndRow(6, 1, 'SEO description');
-// $worksheet->setCellValueByColumnAndRow(1, 7, 'SEO description');
-// $worksheet->setCellValueByColumnAndRow(1, 8, 'SEO description');
-// $worksheet->setCellValueByColumnAndRow(1, 9, 'SEO description');
-// $worksheet->setCellValueByColumnAndRow(1, 10, 'SEO description');
-// $worksheet->setCellValueByColumnAndRow(1, 11, 'SEO description');
-// $worksheet->setCellValueByColumnAndRow(1, 12, 'SEO description');
+$worksheet->setCellValueByColumnAndRow(7, 1, 'Option1 name');
+$worksheet->setCellValueByColumnAndRow(8, 1, 'Option1 value');
+$worksheet->setCellValueByColumnAndRow(9, 1, 'Option2 name');
+$worksheet->setCellValueByColumnAndRow(10, 1, 'Option2 value');
+$worksheet->setCellValueByColumnAndRow(11, 1, 'Option3 name');
+$worksheet->setCellValueByColumnAndRow(12, 1, 'Option3 value');
+$worksheet->setCellValueByColumnAndRow(13, 1, 'SKU price');
+$worksheet->setCellValueByColumnAndRow(14, 1, 'SKU compare at price');
 
+$images=$arr['spu']['images'];
+//sku
+$sku_num=count($arr['sku']['skuAttributeMap']);
+$r=2;
+// 获取有多少种SKU组合
+if(count($arr['sku']['skuList'])>0){
+  foreach ($arr['sku']['skuList'] as $k => $v) {
+    //SKU
+    $stock=$v['stock'];
+    $option_name1=@$arr['sku']['skuAttributeMap'][$v['skuAttributeIds'][0]['id']]['defaultName'];
+    $option_value1=@$arr['sku']['skuAttributeMap'][$v['skuAttributeIds'][0]['id']]['skuAttributeValueMap'][$v['skuAttributeIds'][0]['valueId']]['defaultValue'];
 
-$res=array();
-$w=1;
-if($sku_num>=1){
-  foreach ($arr['sku']['skuAttributeMap'] as $k => $v) {
-      echo $v['defaultName'].PHP_EOL;
-      foreach ($v['skuAttributeValueMap'] as $key => $value) {
-          echo $value['defaultValue'].PHP_EOL;
-          echo $value['imgUrl'].PHP_EOL;
-          echo $value['attributeValueWeight'].PHP_EOL;
+    $option_name2=@$arr['sku']['skuAttributeMap'][$v['skuAttributeIds'][1]['id']]['defaultName'];
+    $option_value2=@$arr['sku']['skuAttributeMap'][$v['skuAttributeIds'][1]['id']]['skuAttributeValueMap'][$v['skuAttributeIds'][1]['valueId']]['defaultValue'];
 
-          $m=getsku($arr['sku']['skuList'],$key);
-          echo $arr['sku']['skuList'][$m]['price'].PHP_EOL;
-          echo $arr['sku']['skuList'][$m]['originPrice'].PHP_EOL;
-          echo $arr['sku']['skuList'][$m]['weight'].PHP_EOL;
-          echo $arr['sku']['skuList'][$m]['weightUnit'].PHP_EOL;
-          echo $arr['sku']['skuList'][$m]['stock'].PHP_EOL;
+    $option_name3=@$arr['sku']['skuAttributeMap'][$v['skuAttributeIds'][2]['id']]['defaultName'];
+    $option_value3=@$arr['sku']['skuAttributeMap'][$v['skuAttributeIds'][2]['id']]['skuAttributeValueMap'][$v['skuAttributeIds'][2]['valueId']]['defaultValue'];
 
-          // fputcsv($fp,array($title,$Subtitle,$seo_title,$seo_desc));
-          // $res["option_name"][$w]
-          // var_dump();
-          // $x=array_search($key, array_column($arr['sku']['skuList'], 'valueId'));
-          // var_dump($x);
-      }
+    $worksheet->setCellValueByColumnAndRow(1, $r, $arr['spu']['title']);
+    $worksheet->setCellValueByColumnAndRow(2, $r, $arr['spu']['subTitle']);
+    $worksheet->setCellValueByColumnAndRow(3, $r, Spider($url));
+    $worksheet->setCellValueByColumnAndRow(4, $r, $images[array_rand($images)]);
+    $worksheet->setCellValueByColumnAndRow(5, $r, $arr['productSeo']['title']);
+    $worksheet->setCellValueByColumnAndRow(6, $r, $arr['productSeo']['desc']);
+    $worksheet->setCellValueByColumnAndRow(7, $r, $option_name1);
+    $worksheet->setCellValueByColumnAndRow(8, $r, $option_value1);
+    $worksheet->setCellValueByColumnAndRow(9, $r, $option_name2);
+    $worksheet->setCellValueByColumnAndRow(10, $r, $option_value2);
+    $worksheet->setCellValueByColumnAndRow(11, $r, $option_name3);
+    $worksheet->setCellValueByColumnAndRow(12, $r, $option_value3);
+    $worksheet->setCellValueByColumnAndRow(13, $r, $v['price']);
+    $worksheet->setCellValueByColumnAndRow(14, $r, $v['originPrice']);
+    $r++;
   }
 }
 
-
 $writer = new Xlsx($spreadsheet);
 $writer->save('hello.xlsx');
+
+
+
 
  ?>
